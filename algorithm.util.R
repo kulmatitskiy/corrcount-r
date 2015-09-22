@@ -1,3 +1,4 @@
+source("visualize.R")
 
 # Preparing Input Object
 MakeInputObject <- function(inputs) {
@@ -294,3 +295,40 @@ summary.PoissonEMResultSet = function (result, roundPaymentsToFactorOf = 50)
   ret = cbind(ret, m)
   return(ret)
 }
+
+
+
+
+
+
+
+
+computeHypTestProbs <- function (x, params) {
+  return(0); # TODO
+  Pmat = matrix(rep(params$segProbs,x$Nall),nrow=x$Nall,byrow=TRUE)
+  
+  # Cell Probabilities: vector of length=numCats containing probabilities of
+  # observing the count+payment of each category for Individual n, given segment s
+  cellProbs = function (n, s)
+  {
+    probs =  ppois( x$original.counts[n,], params$lambdas[s,], lower.tail=FALSE )
+    if (x$withPayments)
+    {
+      useInd = x$pMask[n,]
+      probs[useInd] <- probs[useInd] * pnorm( x$pMeans[n,useInd],
+                                              params$mus[s,useInd], params$sigmas[s,useInd]/sqrt(x$counts[n,useInd]), lower.tail=FALSE)
+    }
+    return(probs);
+  }
+  
+  jointProbs = mapMatrix(Pmat, function(p,n,s)
+  {
+    return(prod( cellProbs(n,s) )) # 'dpois' is the only place where conditional prob functional form has a role
+  })
+  
+  #jointProbs[rowSums(jointProbs) == 0,] <- 1e-300; # because 0s break log-likelihood
+  
+  return(rowSums(jointProbs*params$segProbs))
+  #     return(apply(jointProbs, MARGIN=1, prod));
+}
+
