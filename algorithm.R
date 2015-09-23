@@ -4,7 +4,7 @@ source("algorithm.util.R")
 
 
 MakeCandidatesObject <- function (x) {
-  candidates = list()
+  candidates <- list()
   #     candidates = list( LL = list(), segProbs = list(), lambdas = list() )
   #     if (x$withPayments)
   #     {
@@ -15,14 +15,14 @@ MakeCandidatesObject <- function (x) {
 }
 
 
-UpdateCandidates = function(candidates, params) {
+UpdateCandidates <- function(candidates, params) {
   if (length(candidates) == 0 || params$LL > max(candidates[[1]]$LL)) {
-    candidates[[1]] = params
+    candidates[[1]] <- params
   } 
   return( candidates )
 }
 
-GetBestCandidate = function (candidates) {
+GetBestCandidate <- function (candidates) {
   return(candidates[[1]])
 }
 
@@ -55,7 +55,7 @@ InitStartingParams <- function (x, procStats) {
   repeat {
     # 1. Initialize lambdas and segment probabilities
     # NOTE: IF WE ARE USING FREQS THEN K-MEANS FOR COUNT DATA IS BAD
-    km = kmeans( x$counts, centers=x$numSegs )
+    km <- kmeans( x$counts, centers=x$numSegs )
     params$lambdas  <- km$centers
     params$segProbs <- km$size / x$Ncmb
     
@@ -85,10 +85,10 @@ InitStartingParams <- function (x, procStats) {
     procStats <- LogTime(procStats, "init")
     
     
-    conditionals = computeConditionals(x, params, procStats$MC)
-    LL = computeMarginalLL(x, params, conditionals)
+    conditionals <- computeConditionals(x, params, procStats$MC)
+    LL <- computeMarginalLL(x, params, conditionals)
     if (is.finite(LL)) {
-      params$LL = LL
+      params$LL <- LL
       return(list(params = params, procStats = procStats, conditionals = conditionals))
     }
   }
@@ -96,7 +96,7 @@ InitStartingParams <- function (x, procStats) {
 
 
 # The Algorithm
-RunPoissonEM = function ( counts, numSegs,
+RunPoissonEM <- function ( counts, numSegs,
                           withInflatedZeros = FALSE, hurdle = FALSE, infZerosAsLatent = TRUE,
                           withRandomEffects = FALSE, groupingMatrix = diag(length(counts[1,])),
                           withPayments = FALSE, logNormalPayments = TRUE,
@@ -296,8 +296,8 @@ computePosteriors <- function(x, params, conditionals) {
       bpp[mask] <- jjj[mask] * conditionals$buyCube[mask] / conditionals$cube[mask]
       res <- apply(bpp, FUN=mean, MARGIN=c(1,2,3))
       
-      segProbs = rep(params$segProbs, each = x$Ncmb * x$numCats)
-      res = res * segProbs / phis 
+      segProbs <- rep(params$segProbs, each = x$Ncmb * x$numCats)
+      res <- res * segProbs / phis 
     } else {
       res <- array(0, dim = c(x$Ncmb,x$numCats,x$numSegs))
       ps <- posteriors$segment
@@ -379,11 +379,11 @@ updateLambdas <- function (x, posteriors) {
     # cube of counts
     counts <- rep( x$counts, times = x$numSegs)
     
-    numerator   = apply(posteriors$segmentBuy * counts * x$freqs, MARGIN=c(2,3), FUN=sum)
-    denominator = apply(posteriors$segmentBuy * x$freqs, MARGIN=c(2,3), FUN=sum)
-    lambdas = t(numerator/denominator)
-    lambdas[is.nan(lambdas)] = NA#1e-200
-    colnames(lambdas) = x$names
+    numerator   <- apply(posteriors$segmentBuy * counts * x$freqs, MARGIN=c(2,3), FUN=sum)
+    denominator <- apply(posteriors$segmentBuy * x$freqs, MARGIN=c(2,3), FUN=sum)
+    lambdas <- t(numerator/denominator)
+    lambdas[is.nan(lambdas)] <- NA#1e-200
+    colnames(lambdas) <- x$names
   } else {
     M <- posteriors$segment * x$freqs # Observations-to-segment contributions of each row of data
     SC <- t(M) %*% x$counts           # Counts-to-segment total 

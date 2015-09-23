@@ -272,27 +272,27 @@ summary.PoissonEMResultSet = function (result, roundPaymentsToFactorOf = 50)
   #if(result$withPayments)
   #    ret = cbind(ret, round(result$mus, 2))
   
-  if (result$logNormalPayments)
-  {
-    means   = exp(result$mus + 0.5*result$sigmas^2)
-    medians = exp(result$mus)
-    sds     = sqrt( (exp(result$sigmas^2)-1) * exp(2*result$mus + result$sigmas^2)  )
+  if (result$logNormalPayments) {
+    means   <- exp(result$mus + 0.5*result$sigmas^2)
+    medians <- exp(result$mus)
+    sds     <- sqrt( (exp(result$sigmas^2)-1) * exp(2*result$mus + result$sigmas^2)  )
   } else {
-    means   = result$mus    
-    medians = means;
-    sds     = result$sigmas
+    means   <- result$mus    
+    medians <- means;
+    sds     <- result$sigmas
   }
-  means   = round(means/roundPaymentsToFactorOf)*roundPaymentsToFactorOf
-  medians = round(medians/roundPaymentsToFactorOf)*roundPaymentsToFactorOf
-  sds     = round(sds/roundPaymentsToFactorOf)*roundPaymentsToFactorOf
+  means   <- round(means/roundPaymentsToFactorOf)*roundPaymentsToFactorOf
+  medians <- round(medians/roundPaymentsToFactorOf)*roundPaymentsToFactorOf
+  sds     <- round(sds/roundPaymentsToFactorOf)*roundPaymentsToFactorOf
   
   
-  m = paste(rep("(",length(means)), paste(means, sds,sep=","), rep(")",length(means)),sep="")
-  if (result$logNormalPayments)
-    m = paste(m, medians, sep=" | ")
-  m = matrix(m, nrow=nrow(means))
-  colnames(m) = colnames(result$mus)
-  ret = cbind(ret, m)
+  m <- paste(rep("(",length(means)), paste(means, sds,sep=","), rep(")",length(means)),sep="")
+  if (result$logNormalPayments) {
+    m <- paste(m, medians, sep=" | ")
+  }
+  m <- matrix(m, nrow=nrow(means))
+  colnames(m) <- colnames(result$mus)
+  ret <- cbind(ret, m)
   return(ret)
 }
 
@@ -305,24 +305,21 @@ summary.PoissonEMResultSet = function (result, roundPaymentsToFactorOf = 50)
 
 computeHypTestProbs <- function (x, params) {
   return(0); # TODO
-  Pmat = matrix(rep(params$segProbs,x$Nall),nrow=x$Nall,byrow=TRUE)
+  Pmat <- matrix(rep(params$segProbs,x$Nall),nrow=x$Nall,byrow=TRUE)
   
   # Cell Probabilities: vector of length=numCats containing probabilities of
   # observing the count+payment of each category for Individual n, given segment s
-  cellProbs = function (n, s)
-  {
-    probs =  ppois( x$original.counts[n,], params$lambdas[s,], lower.tail=FALSE )
-    if (x$withPayments)
-    {
-      useInd = x$pMask[n,]
+  cellProbs <- function (n, s) {
+    probs <- ppois( x$original.counts[n,], params$lambdas[s,], lower.tail=FALSE )
+    if (x$withPayments) {
+      useInd <- x$pMask[n,]
       probs[useInd] <- probs[useInd] * pnorm( x$pMeans[n,useInd],
                                               params$mus[s,useInd], params$sigmas[s,useInd]/sqrt(x$counts[n,useInd]), lower.tail=FALSE)
     }
     return(probs);
   }
   
-  jointProbs = mapMatrix(Pmat, function(p,n,s)
-  {
+  jointProbs <- mapMatrix(Pmat, function(p,n,s) {
     return(prod( cellProbs(n,s) )) # 'dpois' is the only place where conditional prob functional form has a role
   })
   
