@@ -46,6 +46,10 @@ If we ingored this, then it would be much easier to find the segments and estima
 
 ## Model
 
+The goal is to fit our data with the following Bayesian Network model:
+
+[INSERT IMG FROM DAFT]
+
 [TODO]
 
 ## Usage Examples
